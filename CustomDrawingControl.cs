@@ -17,7 +17,7 @@ namespace 简单关系图_测试_
 
         // 按下鼠标拖动、滚轮上下滑动、shift+滚轮左右滑动；ctrl+滚轮缩放
         // 按下坐标，当前坐标
-        private Point startPoint, nowPoint;
+        private Point startPoint, nowPoint, nowWheelPoint;
         // 左键是否按下，Ctrl是否按下，Shift是否按下
         private bool isDragging = false, isCtrl = false, isShift = false;
         // x偏移，y偏移，缩放
@@ -48,6 +48,10 @@ namespace 简单关系图_测试_
             var pen = new Pen(Brushes.Red, 2); // 矩形边框颜色和粗细
 
             var padding = 2;//间距
+
+            // 应用缩放变换
+            drawingContext.PushTransform(new ScaleTransform(scale, scale, nowWheelPoint.X, nowWheelPoint.Y));
+
 
             for (int i = 0; i < StringsToDraw.Length; i++)
             {
@@ -127,8 +131,13 @@ namespace 简单关系图_测试_
         // 鼠标滚轮事件处理程序
         private void CustomDrawingControl_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            // 检查是否按下了 Shift 键
-            if (Keyboard.Modifiers == ModifierKeys.Shift) // Shift + 滚轮，左右滚动
+            if (Keyboard.Modifiers == ModifierKeys.Control) // Ctrl + 滚轮，缩放
+            {
+                nowWheelPoint = e.GetPosition(this);
+                // 计算新的缩放比例
+                scale += e.Delta * 0.001;
+            }
+            else if (Keyboard.Modifiers == ModifierKeys.Shift) // Shift + 滚轮，左右滚动
             {
                 offsetX += e.Delta * 0.1;
             }
