@@ -22,7 +22,7 @@ namespace 简单关系图_测试_
         private bool isDragging = false, isCtrl = false, isShift = false;
         // x偏移，y偏移，缩放
         private double offsetX = 0, offsetY = 0, scale = 1;
-        private double offsetNowX = 0, offsetNowY = 0, scaleNow = 1;
+        private double offsetNowX = 0, offsetNowY = 0, scaleD = 0;
 
         public CustomDrawingControl()
         {
@@ -49,8 +49,20 @@ namespace 简单关系图_测试_
 
             var padding = 2;//间距
 
-            // 应用缩放变换
-            drawingContext.PushTransform(new ScaleTransform(scale, scale, nowWheelPoint.X, nowWheelPoint.Y));
+
+            // *变换规则
+            /*
+            TransformGroup transformGroup = new TransformGroup();
+            transformGroup.Children.Add(new ScaleTransform(scale, scale, 0, 0));
+            transformGroup.Children.Add(new TranslateTransform(offsetX + offsetNowX, offsetY + offsetNowY));
+            drawingContext.PushTransform(transformGroup);
+            */
+            drawingContext.PushTransform(new TranslateTransform(offsetX + offsetNowX, offsetY + offsetNowY));
+            drawingContext.PushTransform(new ScaleTransform(scale, scale, 0, 0));
+            var dx = nowWheelPoint.X - (offsetX + offsetNowX);
+            var dy = nowWheelPoint.Y - (offsetY + offsetNowY);
+            drawingContext.PushTransform(new TranslateTransform(-scaleD * dx, -scaleD * dy));
+
 
 
             for (int i = 0; i < StringsToDraw.Length; i++)
@@ -70,8 +82,8 @@ namespace 简单关系图_测试_
                 double textWidth = formattedText.Width;
                 double textHeight = formattedText.Height;
                 // 起点坐标
-                double x = padding + offsetX + offsetNowX + padding;
-                double y = padding + offsetY + offsetNowY + textHeight * i + padding * 4 * i;
+                double x = padding + padding;
+                double y = padding + textHeight * i + padding * 4 * i;
 
                 drawingContext.DrawText(formattedText, new Point(x + padding, y + padding)); // 绘制文本
 
@@ -81,6 +93,17 @@ namespace 简单关系图_测试_
                     new Rect(x, y, textWidth + padding * 2, textHeight + padding * 2) // 矩形的位置和大小
                 );
 
+            }
+            // *移除变换
+            // drawingContext.Pop();
+
+            // ++获取主窗口，并转换为 MainWindow 类型
+            if (Window.GetWindow(this) is MainWindow mainWindow)
+            {
+                // 将鼠标坐标信息写入到主窗口的 OutputTextBox
+                mainWindow.OutputTextBox.Text = $"Mouse X: {Math.Floor(nowPoint.X)}, Y: {Math.Floor(nowPoint.Y)}\n" +
+                    $"Offset X: {Math.Floor(offsetX + offsetNowX)}, Y: {Math.Floor(offsetY + offsetNowY)}\n" +
+                    $"Scale: {scale}";
             }
         }
 
@@ -101,9 +124,17 @@ namespace 简单关系图_测试_
         // 鼠标移动事件处理程序
         private void CustomDrawingControl_MouseMove(object sender, MouseEventArgs e)
         {
+            nowPoint = e.GetPosition(this);
+            // ++获取主窗口，并转换为 MainWindow 类型
+            if (Window.GetWindow(this) is MainWindow mainWindow)
+            {
+                // 将鼠标坐标信息写入到主窗口的 OutputTextBox
+                mainWindow.OutputTextBox.Text = $"Mouse X: {Math.Floor(nowPoint.X)}, Y: {Math.Floor(nowPoint.Y)}\n" +
+                    $"Offset X: {Math.Floor(offsetX + offsetNowX)}, Y: {Math.Floor(offsetY + offsetNowY)}\n" +
+                    $"Scale: {scale}";
+            }
             if (isDragging)
             {
-                nowPoint = e.GetPosition(this);
                 // 计算偏移量
                 offsetNowX = nowPoint.X - startPoint.X;
                 offsetNowY = nowPoint.Y - startPoint.Y;
@@ -135,15 +166,21 @@ namespace 简单关系图_测试_
             {
                 nowWheelPoint = e.GetPosition(this);
                 // 计算新的缩放比例
-                scale += e.Delta * 0.001;
+                scale += e.Delta * 0.0005;
+                scaleD = e.Delta * 0.0005;
+                if (scale < 0.0001) 
+                {
+                    scale -= e.Delta * 0.0005;
+                    scaleD = 0;
+                }
             }
             else if (Keyboard.Modifiers == ModifierKeys.Shift) // Shift + 滚轮，左右滚动
             {
-                offsetX += e.Delta * 0.1;
+                offsetX += e.Delta * 0.2;
             }
             else // 默认情况下，上下滚动
             {
-                offsetY += e.Delta * 0.1;
+                offsetY += e.Delta * 0.2;
             }
 
             InvalidateVisual(); // 强制重绘
