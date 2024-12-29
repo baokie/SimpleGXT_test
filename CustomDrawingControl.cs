@@ -61,8 +61,8 @@ namespace 简单关系图_测试_
             drawingContext.PushTransform(new ScaleTransform(scale, scale, 0, 0));
             var dx = nowWheelPoint.X - (offsetX + offsetNowX);
             var dy = nowWheelPoint.Y - (offsetY + offsetNowY);
-            //drawingContext.PushTransform(new TranslateTransform(-scaleD * dx, -scaleD * dy));
-
+            drawingContext.PushTransform(new TranslateTransform(-scaleD * dx, -scaleD * dy));// ***
+            scaleD = 0;
 
 
             for (int i = 0; i < StringsToDraw.Length; i++)
