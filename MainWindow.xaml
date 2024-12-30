@@ -47,7 +47,7 @@
             <Button Content="按钮4" Margin="5" Padding="5" />
             <Button x:Name="ResetButton" Content="重置" Margin="5" Padding="5" Click="ResetButton_Click" />
         </StackPanel>
-
+       
     </Grid>
-    
+   
 </Window>

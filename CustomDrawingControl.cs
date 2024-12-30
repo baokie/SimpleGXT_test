@@ -24,6 +24,8 @@ namespace 简单关系图_测试_
         private double offsetX = 0, offsetY = 0, scale = 1;
         private double offsetNowX = 0, offsetNowY = 0, scaleD = 0;
 
+        private const double GridSpacing = 20; // ***网格间距
+
         public CustomDrawingControl()
         {
             StringsToDraw = new string[] { }; // 初始化为空数组
@@ -63,6 +65,23 @@ namespace 简单关系图_测试_
             var dy = nowWheelPoint.Y - (offsetY + offsetNowY);
             //drawingContext.PushTransform(new TranslateTransform(-scaleD * dx, -scaleD * dy));// ***
             scaleD = 0;
+
+
+            // ***
+            double width = RenderSize.Width;
+            double height = RenderSize.Height;
+
+            // 绘制横线
+            for (double y = 0; y <= height; y += GridSpacing)
+            {
+                drawingContext.DrawLine(new Pen(Brushes.LightGray, 1), new Point(0, y), new Point(width, y));
+            }
+
+            // 绘制竖线
+            for (double x = 0; x <= width; x += GridSpacing)
+            {
+                drawingContext.DrawLine(new Pen(Brushes.LightGray, 1), new Point(x, 0), new Point(x, height));
+            }
 
 
             for (int i = 0; i < StringsToDraw.Length; i++)
