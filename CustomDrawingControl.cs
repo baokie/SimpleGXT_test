@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Globalization;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -24,7 +25,9 @@ namespace 简单关系图_测试_
         private double offsetX = 0, offsetY = 0, scale = 1;
         private double offsetNowX = 0, offsetNowY = 0, scaleD = 0;
 
-        private const double GridSpacing = 20; // ***网格间距
+        private const int GridSpacing = 20; // ***网格间距
+        private const int TextMargin = 5;
+
 
         public CustomDrawingControl()
         {
@@ -51,36 +54,99 @@ namespace 简单关系图_测试_
 
             var padding = 2;//间距
 
+           
 
             // *变换规则
-            /*
-            TransformGroup transformGroup = new TransformGroup();
-            transformGroup.Children.Add(new ScaleTransform(scale, scale, 0, 0));
-            transformGroup.Children.Add(new TranslateTransform(offsetX + offsetNowX, offsetY + offsetNowY));
-            drawingContext.PushTransform(transformGroup);
-            */
             drawingContext.PushTransform(new TranslateTransform(offsetX + offsetNowX, offsetY + offsetNowY));
             drawingContext.PushTransform(new ScaleTransform(scale, scale, 0, 0));
-            var dx = nowWheelPoint.X - (offsetX + offsetNowX);
-            var dy = nowWheelPoint.Y - (offsetY + offsetNowY);
-            //drawingContext.PushTransform(new TranslateTransform(-scaleD * dx, -scaleD * dy));// ***
+            
+           
+            // 设置画笔和字体
+            var gridPen = new Pen(Brushes.LightGray, 1);
+            var textBrush = Brushes.Black;
+            var textFont = new Typeface("Arial");
+            var fontSize = 10;
+
+            // ***绘制滚轮滚动后鼠标在画布的实际坐标
+            var dx = nowWheelPoint.X;
+            var dy = nowWheelPoint.Y;
+            dx = (dx - offsetX - offsetNowX) / scale;
+            dy = (dy - offsetY - offsetNowY) / scale;
+            //drawingContext.DrawEllipse(Brushes.Red, new Pen(Brushes.Red, 1), new Point(dx, dy), 2, 2);
+
+            // ***绘制滚轮滚动前鼠标在画布的实际坐标
+            var dx2 = nowWheelPoint.X;
+            var dy2 = nowWheelPoint.Y;
+            dx2 = (dx2 - offsetX - offsetNowX) / (scale - scaleD);
+            dy2 = (dy2 - offsetY - offsetNowY) / (scale - scaleD);
+            //drawingContext.DrawEllipse(Brushes.Blue, new Pen(Brushes.Blue, 1), new Point(dx2, dy2), 2, 2);
+
+            var dx3 = dx - dx2;
+            var dy3 = dy - dy2;
+
+            drawingContext.PushTransform(new TranslateTransform(dx3, dy3));
+            offsetX += dx3 * scale;
+            offsetY += dy3 * scale;
+
+            var formattedText2 = new FormattedText(
+                    "dx=" + Math.Round(dx) + ",dy=" + Math.Round(dy) + "\ndx2=" + Math.Round(dx2) + ",dy2=" + Math.Round(dy2),
+                    CultureInfo.CurrentCulture,
+                    FlowDirection.LeftToRight,
+                    textFont,
+                    fontSize,
+                    textBrush,
+                    1
+                );
+            var textPoint2 = new Point(dx, dy - 25);
+            //drawingContext.DrawText(formattedText2, textPoint2);
+
             scaleD = 0;
 
+            // *** 网格
+            // 获取控件的宽高
+            var width = this.ActualWidth;
+            var height = this.ActualHeight;
 
-            // ***
-            double width = RenderSize.Width;
-            double height = RenderSize.Height;
+            if (width == 0 || height == 0) return;
 
-            // 绘制横线
-            for (double y = 0; y <= height; y += GridSpacing)
+            // 绘制横向网格线和文本
+            for (int y = 0; y <= (int)(height / GridSpacing); y++)
             {
-                drawingContext.DrawLine(new Pen(Brushes.LightGray, 1), new Point(0, y), new Point(width, y));
+                var yPos = y * GridSpacing;
+                drawingContext.DrawLine(gridPen, new Point(0, yPos), new Point(width, yPos));
+
+                // 绘制横向坐标文本
+                var formattedText = new FormattedText(
+                    yPos.ToString(),
+                    CultureInfo.CurrentCulture,
+                    FlowDirection.LeftToRight,
+                    textFont,
+                    fontSize,
+                    textBrush,
+                    1
+                );
+                var textPoint = new Point(TextMargin, yPos - formattedText.Height / 2);
+                drawingContext.DrawText(formattedText, textPoint);
             }
 
-            // 绘制竖线
-            for (double x = 0; x <= width; x += GridSpacing)
+            // 绘制纵向网格线和文本
+            for (int x = 0; x <= (int)(width / GridSpacing); x++)
             {
-                drawingContext.DrawLine(new Pen(Brushes.LightGray, 1), new Point(x, 0), new Point(x, height));
+                var xPos = x * GridSpacing;
+                drawingContext.DrawLine(gridPen, new Point(xPos, 0), new Point(xPos, height));
+
+                // 绘制纵向坐标文本
+                var formattedText = new FormattedText(
+                   xPos.ToString(),
+                   CultureInfo.CurrentCulture,
+                   FlowDirection.LeftToRight,
+                   textFont,
+                   fontSize,
+                   textBrush,
+                   1
+               );
+                var textPoint = new Point(xPos - formattedText.Width / 2, height - formattedText.Height - TextMargin);
+                drawingContext.DrawText(formattedText, textPoint);
             }
 
 
@@ -115,6 +181,7 @@ namespace 简单关系图_测试_
             }
             // *移除变换
             // drawingContext.Pop();
+            
 
             // ++获取主窗口，并转换为 MainWindow 类型
             if (Window.GetWindow(this) is MainWindow mainWindow)
