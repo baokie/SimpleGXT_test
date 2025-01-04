@@ -1,8 +1,11 @@
-﻿using System.Globalization;
+﻿using Microsoft.Win32;
+using System.Globalization;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace 简单关系图_测试_
 {
@@ -11,6 +14,8 @@ namespace 简单关系图_测试_
     {
         // *自定义属性
         private double padding = 2;// 间距
+        
+        
         static CustomDrawingControl()
         {
             DefaultStyleKeyProperty.OverrideMetadata(typeof(CustomDrawingControl), new FrameworkPropertyMetadata(typeof(CustomDrawingControl)));
@@ -136,5 +141,54 @@ namespace 简单关系图_测试_
             scale = 1.0;
             InvalidateVisual();
         }
+
+        // **图片保存相关
+        private String keySavePath = "LastSavePath";
+        public void SaveToPngWithDialog()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                var saveDialog = new SaveFileDialog
+                {
+                    InitialDirectory = MainWindow._configManager.GetString(keySavePath, MainWindow.defaultSaveDir),
+                    Filter = "PNG Image (*.png)|*.png",
+                    FileName = "img_" + SomeDeal.GetCurrentDateTimeFormatted() + ".png",
+                    AddExtension = true
+                };
+                if (saveDialog.ShowDialog() == true)
+                {
+                    var filePath = saveDialog.FileName;
+                    SaveToPng(filePath);
+                    MainWindow._configManager.SaveString(keySavePath, System.IO.Path.GetDirectoryName(filePath));
+                }
+            });
+        }
+        private void SaveToPng(string filePath)
+        {
+            var renderWidth = this.RenderSize.Width;
+            var renderHeight = this.RenderSize.Height;
+            if (renderWidth <= 0 || renderHeight <= 0)
+            {
+                return; // 避免零尺寸的渲染
+            }
+
+            var rtb = new RenderTargetBitmap((int)renderWidth, (int)renderHeight, 96, 96, PixelFormats.Pbgra32);
+
+            rtb.Render(this);
+            var encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(rtb));
+            try
+            {
+                using (var fs = new FileStream(filePath, FileMode.Create))
+                {
+                    encoder.Save(fs);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"保存图像失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
     }
 }

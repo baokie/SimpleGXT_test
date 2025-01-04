@@ -42,9 +42,7 @@
         <!-- 下半部分：按钮 -->
         <StackPanel Grid.Row="3" Margin="10" Orientation="Horizontal" HorizontalAlignment="Center" Height="Auto">
             <Button x:Name="SubmitButton" Content="提交（Ctrl+Enter）" Margin="5" Padding="5" Click="SubmitButton_Click" />
-            <Button Content="按钮2" Margin="5" Padding="5" />
-            <Button Content="按钮3" Margin="5" Padding="5" />
-            <Button Content="按钮4" Margin="5" Padding="5" />
+            <Button x:Name="SaveImageButton" Content="保存图像" Margin="5" Padding="5" Click="SaveImageButton_Click" />
             <Button x:Name="ResetButton" Content="重置" Margin="5" Padding="5" Click="ResetButton_Click" />
         </StackPanel>
        
