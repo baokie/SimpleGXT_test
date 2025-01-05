@@ -26,6 +26,8 @@ namespace 简单关系图_测试_
         private bool isDragging = false;// 左键是否按下
         private double offsetX = 0, offsetY = 0, scale = 1;// x偏移，y偏移，缩放
         private double offsetNowX = 0, offsetNowY = 0, scaleD = 0;
+        // 将 DrawingVisual 声明为成员变量
+        private DrawingVisual _drawingVisual = new DrawingVisual();
         public CustomDrawingControl()
         {
             StringsToDraw = new string[] { }; // 初始化为空数组
@@ -37,45 +39,50 @@ namespace 简单关系图_测试_
             // 设置背景，以便在空白区域也能接收鼠标事件
             this.Background = Brushes.White;
         }
-        protected override void OnRender(DrawingContext drawingContext)
+        protected override void OnRender(DrawingContext drawingContext2)
         {
-            base.OnRender(drawingContext);
-            // 变换规则
-            drawingContext.PushTransform(new TranslateTransform(offsetX + offsetNowX, offsetY + offsetNowY));
-            drawingContext.PushTransform(new ScaleTransform(scale, scale, 0, 0));
-            // 调整缩放中心
-            var dx = nowWheelPoint.X - offsetX - offsetNowX;
-            var dy = nowWheelPoint.Y - offsetY - offsetNowY;
-            dx = dx / scale - dx / (scale - scaleD);
-            dy = dy / scale - dy / (scale - scaleD);
-            drawingContext.PushTransform(new TranslateTransform(dx, dy));
-            offsetX += dx * scale;
-            offsetY += dy * scale;
-            scaleD = 0;
-
-            // 设置字体、画笔等
-            var font = new Typeface("Arial");
-            var brush = Brushes.Black; // 字体颜色
-            var pen = new Pen(Brushes.Red, 2); // 矩形边框颜色和粗细
-
-            for (int i = 0; i < StringsToDraw.Length; i++)
+            base.OnRender(drawingContext2);
+            using (var drawingContext = _drawingVisual.RenderOpen())
             {
-                var str = StringsToDraw[i];
-                // 创建格式化文本
-                var formattedText = new FormattedText(
-                    str, System.Globalization.CultureInfo.CurrentCulture,
-                    FlowDirection.LeftToRight, font, 16, brush, 1.0
-                );
-                // 字符串宽高
-                double textWidth = formattedText.Width;
-                double textHeight = formattedText.Height;
-                // 起点坐标
-                double x = padding + padding;
-                double y = padding + textHeight * i + padding * 4 * i;
+                // 变换规则
+                drawingContext.PushTransform(new TranslateTransform(offsetX + offsetNowX, offsetY + offsetNowY));
+                drawingContext.PushTransform(new ScaleTransform(scale, scale, 0, 0));
+                // 调整缩放中心
+                var dx = nowWheelPoint.X - offsetX - offsetNowX;
+                var dy = nowWheelPoint.Y - offsetY - offsetNowY;
+                dx = dx / scale - dx / (scale - scaleD);
+                dy = dy / scale - dy / (scale - scaleD);
+                drawingContext.PushTransform(new TranslateTransform(dx, dy));
+                offsetX += dx * scale;
+                offsetY += dy * scale;
+                scaleD = 0;
 
-                drawingContext.DrawText(formattedText, new Point(x + padding, y + padding)); // 绘制文本、
-                drawingContext.DrawRectangle(null, pen, new Rect(x, y, textWidth + padding * 2, textHeight + padding * 2));// 绘制边框
+                // 设置字体、画笔等
+                var font = new Typeface("Arial");
+                var brush = Brushes.Black; // 字体颜色
+                var pen = new Pen(Brushes.Red, 2); // 矩形边框颜色和粗细
+
+                for (int i = 0; i < StringsToDraw.Length; i++)
+                {
+                    var str = StringsToDraw[i];
+                    // 创建格式化文本
+                    var formattedText = new FormattedText(
+                        str, System.Globalization.CultureInfo.CurrentCulture,
+                        FlowDirection.LeftToRight, font, 16, brush, 1.0
+                    );
+                    // 字符串宽高
+                    double textWidth = formattedText.Width;
+                    double textHeight = formattedText.Height;
+                    // 起点坐标
+                    double x = padding + padding;
+                    double y = padding + textHeight * i + padding * 4 * i;
+
+                    drawingContext.DrawText(formattedText, new Point(x + padding, y + padding)); // 绘制文本、
+                    drawingContext.DrawRectangle(null, pen, new Rect(x, y, textWidth + padding * 2, textHeight + padding * 2));// 绘制边框
+                }
             }
+            // 这里直接画drawingvisual，不会重新绘制
+            drawingContext2.DrawDrawing(_drawingVisual.Drawing);
         }
         private void CustomDrawingControl_MouseDown(object sender, MouseButtonEventArgs e)// 鼠标按下事件处理程序
         {
@@ -163,20 +170,34 @@ namespace 简单关系图_测试_
                 }
             });
         }
-        private void SaveToPng(string filePath)
+        public void SaveToPng(string filePath)
         {
-            var renderWidth = this.RenderSize.Width;
-            var renderHeight = this.RenderSize.Height;
-            if (renderWidth <= 0 || renderHeight <= 0)
+            // 3. 测量内容范围
+            var bounds = _drawingVisual.ContentBounds;
+            // 4. 创建 RenderTargetBitmap
+            var renderTargetBitmap = new RenderTargetBitmap(
+                (int)Math.Ceiling(bounds.Width),
+                (int)Math.Ceiling(bounds.Height),
+                96, 96, PixelFormats.Pbgra32);
+
+            // 3. 创建一个新的 DrawingVisual，用于应用临时的平移变换
+            var saveVisual = new DrawingVisual();
+            using (var saveDc = saveVisual.RenderOpen())
             {
-                return; // 避免零尺寸的渲染
+                // 4. 应用一个临时的平移变换，将内容平移回原点 (0, 0)
+                saveDc.PushTransform(new TranslateTransform(-bounds.X, -bounds.Y));
+                // 5. 将 _drawingVisual 绘制到 saveVisual 的 DrawingContext 上
+                saveDc.DrawDrawing(_drawingVisual.Drawing);
+                // 6. 弹出临时的平移变换
+                saveDc.Pop();
             }
-
-            var rtb = new RenderTargetBitmap((int)renderWidth, (int)renderHeight, 96, 96, PixelFormats.Pbgra32);
-
-            rtb.Render(this);
+            // 7. 将 saveVisual 渲染到 RenderTargetBitmap
+            renderTargetBitmap.Render(saveVisual);
+            
+            // 5. 编码为 PNG
             var encoder = new PngBitmapEncoder();
-            encoder.Frames.Add(BitmapFrame.Create(rtb));
+            encoder.Frames.Add(BitmapFrame.Create(renderTargetBitmap));
+            // 6. 保存文件
             try
             {
                 using (var fs = new FileStream(filePath, FileMode.Create))
