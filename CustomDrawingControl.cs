@@ -151,15 +151,21 @@ namespace 简单关系图_测试_
 
         // **图片保存相关
         private String keySavePath = "LastSavePath";
+        private String keySaveName = "LastSaveName";
         public void SaveToPngWithDialog()
         {
             Dispatcher.Invoke(() =>
             {
+                String name = "img_" + SomeDeal.GetCurrentDateTimeFormatted() + ".png";
+                if (!MainWindow.isUpdateName)
+                {
+                    name = MainWindow._configManager.GetString(keySaveName, name);
+                }
                 var saveDialog = new SaveFileDialog
                 {
                     InitialDirectory = MainWindow._configManager.GetString(keySavePath, MainWindow.defaultSaveDir),
                     Filter = "PNG Image (*.png)|*.png",
-                    FileName = "img_" + SomeDeal.GetCurrentDateTimeFormatted() + ".png",
+                    FileName = name,
                     AddExtension = true
                 };
                 if (saveDialog.ShowDialog() == true)
@@ -167,6 +173,7 @@ namespace 简单关系图_测试_
                     var filePath = saveDialog.FileName;
                     SaveToPng(filePath);
                     MainWindow._configManager.SaveString(keySavePath, System.IO.Path.GetDirectoryName(filePath));
+                    MainWindow._configManager.SaveString(keySaveName, System.IO.Path.GetFileName(filePath));
                 }
             });
         }

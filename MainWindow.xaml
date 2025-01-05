@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:简单关系图_测试_"
         mc:Ignorable="d"
         Title="MainWindow" Height="600" Width="1000"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        KeyDown="InputTextBox_KeyDown">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="3*" MinHeight="100" />
@@ -25,7 +26,7 @@
 
             <TextBox x:Name="InputTextBox" Grid.Column="0" Margin="10" Padding="5"
                      AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
-                     KeyDown="InputTextBox_KeyDown" />
+                     />
 
             <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Background="Gray" />
 
@@ -42,8 +43,10 @@
         <!-- 下半部分：按钮 -->
         <StackPanel Grid.Row="3" Margin="10" Orientation="Horizontal" HorizontalAlignment="Center" Height="Auto">
             <Button x:Name="SubmitButton" Content="提交（Ctrl+Enter）" Margin="5" Padding="5" Click="SubmitButton_Click" />
-            <Button x:Name="SaveImageButton" Content="保存图像" Margin="5" Padding="5" Click="SaveImageButton_Click" />
-            <Button x:Name="ResetButton" Content="重置" Margin="5" Padding="5" Click="ResetButton_Click" />
+            <Button x:Name="UpdateNameButton" Content="当前更新文件名（Ctrl+U）" Margin="5" Padding="5" Click="UpdateNameButton_Click" />
+            <Button x:Name="SaveTextButton" Content="保存文本（Ctrl+S）" Margin="5" Padding="5" Click="SaveTextButton_Click" />
+            <Button x:Name="SaveImageButton" Content="保存图像（Ctrl+Shift+S）" Margin="5" Padding="5" Click="SaveImageButton_Click" />
+            <Button x:Name="ResetButton" Content="重置（Ctrl+R）" Margin="5" Padding="5" Click="ResetButton_Click" />
         </StackPanel>
        
     </Grid>
