@@ -131,7 +131,7 @@ namespace 简单关系图_测试_
             // 获取 TextBox 中的文本，并按换行符分割成字符串数组
             string[] lines = InputTextBox.Text.Split(new[] { '\r', '\n' }, System.StringSplitOptions.RemoveEmptyEntries);
             // 更新 CustomDrawingControl 的 StringsToDraw 属性
-            DrawingControl.StringsToDraw = lines;
+            DrawingControl.StringsToDraw = RuleWXT.getNameByLine(lines[0]);
             // 强制 CustomDrawingControl 重新绘制
             DrawingControl.InvalidateVisual();
         }

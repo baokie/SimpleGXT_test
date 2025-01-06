@@ -62,24 +62,25 @@ namespace 简单关系图_测试_
                 var brush = Brushes.Black; // 字体颜色
                 var pen = new Pen(Brushes.Red, 2); // 矩形边框颜色和粗细
 
-                for (int i = 0; i < StringsToDraw.Length; i++)
-                {
-                    var str = StringsToDraw[i];
-                    // 创建格式化文本
-                    var formattedText = new FormattedText(
-                        str, System.Globalization.CultureInfo.CurrentCulture,
-                        FlowDirection.LeftToRight, font, 16, brush, 1.0
-                    );
-                    // 字符串宽高
-                    double textWidth = formattedText.Width;
-                    double textHeight = formattedText.Height;
-                    // 起点坐标
-                    double x = padding + padding;
-                    double y = padding + textHeight * i + padding * 4 * i;
+                if(StringsToDraw!=null)
+                    for (int i = 0; i < StringsToDraw.Length; i++)
+                    {
+                        var str = StringsToDraw[i];
+                        // 创建格式化文本
+                        var formattedText = new FormattedText(
+                            str, System.Globalization.CultureInfo.CurrentCulture,
+                            FlowDirection.LeftToRight, font, 16, brush, 1.0
+                        );
+                        // 字符串宽高
+                        double textWidth = formattedText.Width;
+                        double textHeight = formattedText.Height;
+                        // 起点坐标
+                        double x = padding + padding;
+                        double y = padding + textHeight * i + padding * 4 * i;
 
-                    drawingContext.DrawText(formattedText, new Point(x + padding, y + padding)); // 绘制文本、
-                    drawingContext.DrawRectangle(null, pen, new Rect(x, y, textWidth + padding * 2, textHeight + padding * 2));// 绘制边框
-                }
+                        drawingContext.DrawText(formattedText, new Point(x + padding, y + padding)); // 绘制文本、
+                        drawingContext.DrawRectangle(null, pen, new Rect(x, y, textWidth + padding * 2, textHeight + padding * 2));// 绘制边框
+                    }
             }
             // 这里直接画drawingvisual，不会重新绘制
             drawingContext2.DrawDrawing(_drawingVisual.Drawing);
