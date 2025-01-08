@@ -128,6 +128,11 @@ namespace 简单关系图_测试_
         }
         private void SubmitData()
         {
+            if(string.IsNullOrWhiteSpace(InputTextBox.Text))
+            {
+                MessageBox.Show("请输入内容", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
             // 获取 TextBox 中的文本，并按换行符分割成字符串数组
             string[] lines = InputTextBox.Text.Split(new[] { '\r', '\n' }, System.StringSplitOptions.RemoveEmptyEntries);
             // 更新 CustomDrawingControl 的 StringsToDraw 属性
