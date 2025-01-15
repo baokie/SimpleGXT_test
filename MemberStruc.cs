@@ -62,7 +62,7 @@ namespace 简单关系图_测试_
         public List<int> addCode(List<int> codelist, int code)
         {
             List<int> newList = new List<int>(codelist); // 使用复制构造函数创建副本
-            newList.Add(code);
+            newList.Add(code);// *****这里待修改*****
             return newList;
         }
         // 获取性别：通过称呼、编号、路线
